@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { carDetailStyles } from "../assets/dummyStyles";
 import carsData from "../assets/carsData";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate, useParams } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -17,31 +16,27 @@ import {
   FaUser,
   FaUserFriends,
 } from "react-icons/fa";
+
 const CarDetail = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // today's date for date inputs
   const [today, setToday] = useState("");
   useEffect(() => {
     setToday(new Date().toISOString().split("T")[0]);
   }, []);
 
-  // get car from router state or fallback to data
   const car = location.state?.car || carsData.find((c) => String(c.id) === id);
   if (!car) return <div className="p-4 text-white">Car not found.</div>;
 
-  // safe transmission label
   const transmissionLabel = car.transmission
     ? car.transmission.toLowerCase()
     : "standard";
 
-  // carousel
   const [currentImage, setCurrentImage] = useState(0);
   const carImages = [car.image, ...(car.images || [])];
 
-  // booking form state
   const initialForm = {
     pickupDate: "",
     returnDate: "",
@@ -54,7 +49,6 @@ const CarDetail = () => {
   const [formData, setFormData] = useState(initialForm);
   const [activeField, setActiveField] = useState(null);
 
-  // handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((fd) => ({
@@ -63,14 +57,13 @@ const CarDetail = () => {
     }));
   };
 
-  // calculation function
   const calculateTotal = () => {
     const { pickupDate, returnDate } = formData;
     if (pickupDate && returnDate) {
       const days = Math.max(
         1,
         Math.ceil(
-          (new Date(returnDate) - new Date(pickupDate)) / (1000 * 60 * 24)
+          (new Date(returnDate) - new Date(pickupDate)) / (1000 * 60 * 60 * 24)
         )
       );
       return days * car.price;
@@ -84,25 +77,15 @@ const CarDetail = () => {
     toast.success("Booking confirmed!", {
       position: "top-right",
       autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
     });
     setFormData(initialForm);
   };
 
-  const handleFocus = (field) => {
-    setActiveField(field);
-  };
-
-  const handleBlur = () => {
-    setActiveField(null);
-  };
+  const handleFocus = (field) => setActiveField(field);
+  const handleBlur = () => setActiveField(null);
 
   return (
     <div className={carDetailStyles.pageContainer}>
-      {/*main content */}
       <div className={carDetailStyles.contentContainer}>
         <ToastContainer />
         <button
@@ -113,6 +96,7 @@ const CarDetail = () => {
         </button>
 
         <div className={carDetailStyles.mainLayout}>
+          {/* Left Column */}
           <div className={carDetailStyles.leftColumn}>
             <div className={carDetailStyles.imageCarousel}>
               <img
@@ -129,11 +113,12 @@ const CarDetail = () => {
                       className={carDetailStyles.carouselIndicator(
                         idx === currentImage
                       )}
-                    ></button>
+                    />
                   ))}
                 </div>
               )}
             </div>
+
             <h1 className={carDetailStyles.carName}>{car.name}</h1>
             <p className={carDetailStyles.carPrice}>
               ${car.price}{" "}
@@ -142,59 +127,31 @@ const CarDetail = () => {
 
             <div className={carDetailStyles.specsGrid}>
               {[
-                {
-                  Icon: FaUserFriends,
-                  label: "Seats",
-                  value: car.seats,
-                  color: "text-orange-400",
-                },
-                {
-                  Icon: FaGasPump,
-                  label: "Fuel",
-                  value: car.fuel,
-                  color: "text-green-400",
-                },
-                {
-                  Icon: FaTachometerAlt,
-                  label: "Mileage",
-                  value: car.mileage,
-                  color: "text-yellow-400",
-                },
-                {
-                  Icon: FaCheckCircle,
-                  label: "Transmission",
-                  value: transmissionLabel,
-                  color: "text-purple-400",
-                },
+                { Icon: FaUserFriends, label: "Seats", value: car.seats, color: "text-orange-400" },
+                { Icon: FaGasPump, label: "Fuel", value: car.fuel, color: "text-green-400" },
+                { Icon: FaTachometerAlt, label: "Mileage", value: car.mileage, color: "text-yellow-400" },
+                { Icon: FaCheckCircle, label: "Transmission", value: transmissionLabel, color: "text-purple-400" },
               ].map((spec, i) => (
                 <div key={i} className={carDetailStyles.specCard}>
-                  <spec.Icon
-                    className={`${spec.color} ${carDetailStyles.specIcon}`}
-                  />
-
+                  <spec.Icon className={`${spec.color} ${carDetailStyles.specIcon}`} />
                   <p className={carDetailStyles.specLabel}>{spec.label}</p>
-                  <p className={carDetailStyles.specValue}>{car.value}</p>
+                  <p className={carDetailStyles.specValue}>{spec.value}</p>
                 </div>
               ))}
             </div>
 
-            {/*Aout  */}
             <div className={carDetailStyles.aboutSection}>
               <h2 className={carDetailStyles.aboutTitle}>About this car</h2>
               <p className={carDetailStyles.aboutText}>
-                Experience luxury in the {car.name}. with its{""}
-                {transmissionLabel} transmission and seating for {car.seats},
-                every journey is exceptional
+                Experience luxury in the {car.name} with its {transmissionLabel} transmission and seating for {car.seats}.
               </p>
               <p className={carDetailStyles.aboutText}>
-                {car.description ||
-                  "This car combines performance and comfort for an unforgettable drive."}
+                {car.description || "This car combines performance and comfort for an unforgettable drive."}
               </p>
             </div>
           </div>
 
-          {/*righ */}
-
+          {/* Right Column */}
           <div className={carDetailStyles.rightColumn}>
             <div className={carDetailStyles.bookingCard}>
               <h2 className={carDetailStyles.bookingTitle}>
@@ -203,32 +160,19 @@ const CarDetail = () => {
                   Your Drive
                 </span>
               </h2>
-              <p className={carDetailStyles.bookingSubtitle}>
-                Fast &middot; Secure &middot; Easy
-              </p>
+              <p className={carDetailStyles.bookingSubtitle}>Fast &middot; Secure &middot; Easy</p>
 
               <form onSubmit={handleSubmit} className={carDetailStyles.form}>
                 <div className={carDetailStyles.grid2}>
                   <div className="flex flex-col">
-                    <label
-                      htmlFor="pickupDate"
-                      className={carDetailStyles.formLabel}
-                    >
-                      Pickup Date
-                    </label>
-                    <div
-                      className={carDetailStyles.inputContainer(
-                        activeField === "pickupDate"
-                      )}
-                    >
-                      <div className={carDetailStyles.inputIcon}>
-                        <FaCalendarAlt />
-                      </div>
+                    <label className={carDetailStyles.formLabel}>Pickup Date</label>
+                    <div className={carDetailStyles.inputContainer(activeField === "pickupDate")}>
+                      <div className={carDetailStyles.inputIcon}><FaCalendarAlt /></div>
                       <input
                         type="date"
-                        id="pickupDate"
                         name="pickupDate"
                         min={today}
+                        value={formData.pickupDate}
                         onChange={handleInputChange}
                         onFocus={() => handleFocus("pickupDate")}
                         onBlur={handleBlur}
@@ -239,25 +183,14 @@ const CarDetail = () => {
                   </div>
 
                   <div className="flex flex-col">
-                    <label
-                      htmlFor="returnDate"
-                      className={carDetailStyles.formLabel}
-                    >
-                      Return Date
-                    </label>
-                    <div
-                      className={carDetailStyles.inputContainer(
-                        activeField === "returnDate"
-                      )}
-                    >
-                      <div className={carDetailStyles.inputIcon}>
-                        <FaCalendarAlt />
-                      </div>
+                    <label className={carDetailStyles.formLabel}>Return Date</label>
+                    <div className={carDetailStyles.inputContainer(activeField === "returnDate")}>
+                      <div className={carDetailStyles.inputIcon}><FaCalendarAlt /></div>
                       <input
                         type="date"
-                        id="returnDate"
                         name="returnDate"
                         min={formData.pickupDate || today}
+                        value={formData.returnDate}
                         onChange={handleInputChange}
                         onFocus={() => handleFocus("returnDate")}
                         onBlur={handleBlur}
@@ -269,17 +202,9 @@ const CarDetail = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className={carDetailStyles.formLabel}>
-                    Pickup Location
-                  </label>
-                  <div
-                    className={carDetailStyles.inputContainer(
-                      activeField === "pickupLocation"
-                    )}
-                  >
-                    <div className={carDetailStyles.inputIcon}>
-                      <FaMapMarkedAlt />
-                    </div>
+                  <label className={carDetailStyles.formLabel}>Pickup Location</label>
+                  <div className={carDetailStyles.inputContainer(activeField === "pickupLocation")}>
+                    <div className={carDetailStyles.inputIcon}><FaMapMarkedAlt /></div>
                     <input
                       type="text"
                       name="pickupLocation"
@@ -289,21 +214,15 @@ const CarDetail = () => {
                       onFocus={() => handleFocus("pickupLocation")}
                       onBlur={handleBlur}
                       required
-                      className={carDetailStyles.tex}
+                      className={carDetailStyles.textInputField} // ✅ fixed
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col">
                   <label className={carDetailStyles.formLabel}>Full Name</label>
-                  <div
-                    className={carDetailStyles.inputContainer(
-                      activeField === "name"
-                    )}
-                  >
-                    <div className={carDetailStyles.inputIcon}>
-                      <FaUser />
-                    </div>
+                  <div className={carDetailStyles.inputContainer(activeField === "name")}>
+                    <div className={carDetailStyles.inputIcon}><FaUser /></div>
                     <input
                       type="text"
                       name="name"
@@ -319,17 +238,9 @@ const CarDetail = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className={carDetailStyles.formLabel}>
-                    Email Address
-                  </label>
-                  <div
-                    className={carDetailStyles.inputContainer(
-                      activeField === "email"
-                    )}
-                  >
-                    <div className={carDetailStyles.inputIcon}>
-                      <FaEnvelope />
-                    </div>
+                  <label className={carDetailStyles.formLabel}>Email Address</label>
+                  <div className={carDetailStyles.inputContainer(activeField === "email")}>
+                    <div className={carDetailStyles.inputIcon}><FaEnvelope /></div>
                     <input
                       type="email"
                       name="email"
@@ -345,17 +256,9 @@ const CarDetail = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className={carDetailStyles.formLabel}>
-                    Phone Number
-                  </label>
-                  <div
-                    className={carDetailStyles.inputContainer(
-                      activeField === "phone"
-                    )}
-                  >
-                    <div className={carDetailStyles.inputIcon}>
-                      <FaPhone />
-                    </div>
+                  <label className={carDetailStyles.formLabel}>Phone Number</label>
+                  <div className={carDetailStyles.inputContainer(activeField === "phone")}>
+                    <div className={carDetailStyles.inputIcon}><FaPhone /></div>
                     <input
                       type="tel"
                       name="phone"
@@ -382,9 +285,7 @@ const CarDetail = () => {
                         {Math.max(
                           1,
                           Math.ceil(
-                            (new Date(formData.returnDate) -
-                              new Date(formData.pickupDate)) /
-                              (1000 * 60 * 60 * 24)
+                            (new Date(formData.returnDate) - new Date(formData.pickupDate)) / (1000*60*60*24)
                           )
                         )}
                       </span>
